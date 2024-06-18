@@ -35,10 +35,6 @@ base_images:
     name: 4.16-priv
     namespace: ocp-private
     tag: oc-rpms
-  ocp_4.16_base:
-    name: 4.16-priv
-    namespace: ocp-private
-    tag: base
   ocp_4.16_base-rhel9:
     name: 4.16-priv
     namespace: ocp-private
@@ -120,9 +116,6 @@ images:
   to: pod
 - dockerfile_path: openshift-hack/images/installer-kube-apiserver-artifacts/Dockerfile.rhel
   inputs:
-    ocp_4.16_base:
-      as:
-      - registry.ci.openshift.org/ocp/4.16:base
     ocp_4.16_base-rhel9:
       as:
       - registry.ci.openshift.org/ocp/4.16:base-rhel9
@@ -134,7 +127,6 @@ promotion:
   to:
   - additional_images:
       artifacts: artifacts
-    disabled: true
     excluded_images:
     - rhel-coreos
     name: 4.16-priv
@@ -263,7 +255,8 @@ tests:
     memory_backed_volume:
       size: 6Gi
 - as: verify
-  commands: ARTIFACTS="${ARTIFACT_DIR}" TMPDIR=/tmp/volume openshift-hack/verify.sh
+  commands: |
+    KUBE_VERIFY_GIT_BRANCH="${PULL_BASE_REF:-master}" ARTIFACTS="${ARTIFACT_DIR}" TMPDIR=/tmp/volume openshift-hack/verify.sh
   container:
     from: src
 - as: verify-commits
@@ -369,7 +362,7 @@ tests:
 - as: e2e-vsphere
   optional: true
   steps:
-    cluster_profile: vsphere-2
+    cluster_profile: vsphere-elastic
     env:
       TEST_SUITE: openshift/conformance/parallel
     workflow: openshift-e2e-vsphere

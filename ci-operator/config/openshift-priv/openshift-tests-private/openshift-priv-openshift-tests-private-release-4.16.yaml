@@ -96,8 +96,7 @@ images:
   to: tests-private-pr
 promotion:
   to:
-  - disabled: true
-    excluded_images:
+  - excluded_images:
     - tests-private
     - tests-private-ui
     - tests-private-pr
@@ -150,16 +149,14 @@ tests:
     fi
   container:
     from: src
-  optional: true
 - as: code-check
   commands: |
     unset GOFLAGS
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.50.1 2> /dev/null
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.54.2 2> /dev/null
     which golangci-lint
     make check-code
   container:
     from: src
-  optional: true
 - as: e2e-aws
   optional: true
   skip_if_only_changed: (frontend/)|(test/extended/(disaster_recovery|hypershift|kata|psap/hypernto|winc|testdata|cluster_operator/hive|ocm_terraform|rosacli|util)/)|include\.go$

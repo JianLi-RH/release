@@ -108,7 +108,7 @@ tests:
     workflow: cucushift-installer-rehearse-azure-upi
 - as: baremetal-ipi-ovn-ipv4-f360
   cluster: build05
-  cron: 41 10 5 * *
+  cron: 41 10 5 5 *
   steps:
     cluster_profile: equinix-ocp-metal-qe
     env:
@@ -171,7 +171,7 @@ tests:
           memory: 200Mi
     - ref: cucushift-chainupgrade-toimage
     workflow: cucushift-installer-rehearse-ibmcloud-ipi
-- as: nutanix-ipi-f360
+- as: nutanix-ipi-boot-categories-project-f360
   cluster: build01
   cron: 54 22 19 4 *
   steps:

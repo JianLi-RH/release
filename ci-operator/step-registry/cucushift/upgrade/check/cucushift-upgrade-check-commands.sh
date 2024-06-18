@@ -23,13 +23,17 @@ function preparation_for_test() {
     fi
     #shellcheck source=${SHARED_DIR}/runtime_env
     source "${SHARED_DIR}/runtime_env"
-    upuser1=$(echo "${USERS}" | cut -d ',' -f 30)
-    upuser2=$(echo "${USERS}" | cut -d ',' -f 29)
+    IFS=',' read upuser1 upuser2 _ < <(echo $USERS | cut -d',' -f8-10)
+    apiport="$(yq '.environments.ocp4.api_port' <<< $BUSHSLICER_CONFIG)"
+    version="$(yq '.environments.ocp4.version' <<< $BUSHSLICER_CONFIG)"
+    browser="$(yq '.global.browser' <<< $BUSHSLICER_CONFIG)"
     export BUSHSLICER_CONFIG="
 global:
-  browser: chrome
+  browser: '${browser}'
 environments:
   ocp4:
+    api_port: '${apiport}'
+    version: '${version}'
     static_users_map:
       upuser1: '${upuser1}'
       upuser2: '${upuser2}'
@@ -234,7 +238,7 @@ function filter_tests() {
     echo_upgrade_tags
 }
 function test_execution() {
-    pushd verification-tests
+    pushd /verification-tests
     export OPENSHIFT_ENV_OCP4_USER_MANAGER=UpgradeUserManager
     export OPENSHIFT_ENV_OCP4_USER_MANAGER_USERS=${USERS}
     export BUSHSLICER_REPORT_DIR="${ARTIFACT_DIR}"
@@ -256,8 +260,7 @@ function summarize_test_results() {
     done < /tmp/zzz-tmp.log
     TEST_RESULT_FILE="${ARTIFACT_DIR}/test-results.yaml"
     cat > "${TEST_RESULT_FILE}" <<- EOF
-cucushift:
-  type: cucushift-upgrade-check
+cucushift-upgrade-check:
   total: $tests
   failures: $failures
   errors: $errors

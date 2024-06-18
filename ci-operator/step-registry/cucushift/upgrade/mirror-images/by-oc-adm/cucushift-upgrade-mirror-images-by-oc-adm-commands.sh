@@ -1,8 +1,12 @@
 #!/bin/bash
-
 set -o nounset
 set -o errexit
 set -o pipefail
+
+export HOME="${HOME:-/tmp/home}"
+export XDG_RUNTIME_DIR="${HOME}/run"
+export REGISTRY_AUTH_PREFERENCE=podman # TODO: remove later, used for migrating oc from docker to podman
+mkdir -p "${XDG_RUNTIME_DIR}"
 
 function run_command() {
     local CMD="$1"
@@ -30,17 +34,15 @@ function check_signed() {
     fi
     algorithm="$(echo "${digest}" | cut -f1 -d:)"
     hash_value="$(echo "${digest}" | cut -f2 -d:)"
-    set -x
     try=0
-    max_retries=2
-    response=$(https_proxy="" HTTPS_PROXY="" curl --silent --output /dev/null --write-out %"{http_code}" "https://mirror.openshift.com/pub/openshift-v4/signatures/openshift/release/${algorithm}=${hash_value}/signature-1" -v)
+    max_retries=3
+    response=0
     while (( try < max_retries && response != 200 )); do
         echo "Trying #${try}"
-        response=$(https_proxy="" HTTPS_PROXY="" curl --silent --output /dev/null --write-out %"{http_code}" "https://mirror.openshift.com/pub/openshift-v4/signatures/openshift/release/${algorithm}=${hash_value}/signature-1" -v)
+        response=$(https_proxy="" HTTPS_PROXY="" curl --silent --output /dev/null --write-out %"{http_code}" "https://mirror.openshift.com/pub/openshift-v4/signatures/openshift/release/${algorithm}=${hash_value}/signature-1")
         (( try += 1 ))
         sleep 60
     done
-    set +x
     if (( response == 200 )); then
         echo "${TARGET} is signed" && return 0
     else
@@ -101,11 +103,17 @@ function update_icsp(){
 }
 
 # Extract oc binary which is supposed to be identical with target release
+# Default oc on OCP 4.16 not support OpenSSL 1.x
 function extract_oc(){
     echo -e "Extracting oc\n"
-    local retry=5 tmp_oc="/tmp/client-2"
+    local target_version minor_version retry=5 tmp_oc="/tmp/client-2" binary='oc'
     mkdir -p ${tmp_oc}
-    while ! (env "NO_PROXY=*" "no_proxy=*" oc adm release extract -a "${CLUSTER_PROFILE_DIR}/pull-secret" --command=oc --to=${tmp_oc} ${TARGET});
+    target_version="$(env "NO_PROXY=*" "no_proxy=*" oc adm release info "${TARGET}" --output=json | jq -r '.metadata.version')"
+    minor_version="$(echo "${target_version}" | cut -f2 -d.)"
+    if (( minor_version > 15 )) && (openssl version | grep -q "OpenSSL 1") ; then
+        binary='oc.rhel8'
+    fi
+    while ! (env "NO_PROXY=*" "no_proxy=*" oc adm release extract -a "${CLUSTER_PROFILE_DIR}/pull-secret" --command=${binary} --to=${tmp_oc} ${TARGET});
     do
         echo >&2 "Failed to extract oc binary, retry..."
         (( retry -= 1 ))

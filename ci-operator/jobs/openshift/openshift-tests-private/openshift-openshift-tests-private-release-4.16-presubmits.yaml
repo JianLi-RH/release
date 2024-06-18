@@ -15,7 +15,6 @@ presubmits:
       job-release: "4.16"
       pj-rehearse.openshift.io/can-be-rehearsed: "true"
     name: pull-ci-openshift-openshift-tests-private-release-4.16-bindata-check
-    optional: true
     rerun_command: /test bindata-check
     spec:
       containers:
@@ -79,7 +78,6 @@ presubmits:
       job-release: "4.16"
       pj-rehearse.openshift.io/can-be-rehearsed: "true"
     name: pull-ci-openshift-openshift-tests-private-release-4.16-code-check
-    optional: true
     rerun_command: /test code-check
     spec:
       containers:
@@ -696,6 +694,7 @@ presubmits:
         - --oauth-token-path=/usr/local/github-credentials/oauth
         - --report-credentials-file=/etc/report/credentials
         - --target=[images]
+        - --target=[release:latest]
         command:
         - ci-operator
         image: ci-operator:latest

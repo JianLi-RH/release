@@ -161,7 +161,7 @@ additional_caps_from_config=$(yq-go r "${SHARED_DIR}/install-config.yaml" "capab
 if [[ "${additional_caps_from_config}" != "" ]]; then
     enabled_capability_set="${enabled_capability_set} ${additional_caps_from_config}"
 fi
-# Once pr https://github.com/openshift/cluster-version-operator/pull/946 merged, the code can be opened
+
 #for version in "${!always_enabled_caps[@]}"; do
 #    if [[ ${ocp_version/.} -ge ${version} ]]; then
 #        enabled_capability_set="${enabled_capability_set} ${always_enabled_caps[$version]}"

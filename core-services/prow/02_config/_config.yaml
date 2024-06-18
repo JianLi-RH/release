@@ -84,7 +84,7 @@ deck:
       - jtaleric
       - dry923
       - chentex
-  - repo: redhat-chaos/krkn-hub
+  - repo: redhat-chaos/prow-scripts
     rerun_auth_configs:
       github_team_slugs:
       - org: redhat-chaos
@@ -259,10 +259,10 @@ plank:
             memory: 250Mi
       timeout: 4h0m0s
       utility_images:
-        clonerefs: gcr.io/k8s-prow/clonerefs:v20240424-0a3188200
-        entrypoint: gcr.io/k8s-prow/entrypoint:v20240424-0a3188200
-        initupload: gcr.io/k8s-prow/initupload:v20240424-0a3188200
-        sidecar: gcr.io/k8s-prow/sidecar:v20240424-0a3188200
+        clonerefs: gcr.io/k8s-prow/clonerefs:v20240611-924d31f0c
+        entrypoint: gcr.io/k8s-prow/entrypoint:v20240611-924d31f0c
+        initupload: gcr.io/k8s-prow/initupload:v20240611-924d31f0c
+        sidecar: gcr.io/k8s-prow/sidecar:v20240611-924d31f0c
   - config:
       gcs_configuration:
         bucket: origin-ci-private
